@@ -1,0 +1,11 @@
+#!/bin/bash
+#PBS -lwalltime=24:00:00
+#PBS -lselect=1:ncpus=4:mem=99gb
+
+module load anaconda3/personal
+source activate PoC_Ammonia
+
+cd $PBS_O_WORKDIR
+echo $PBS_O_WORKDIR
+cd ..
+python ${PWD}/CMAQ_SatelliteAK_CAMR.py --year=2018 --domain_size=10 --cloud_fraction=0.2 
