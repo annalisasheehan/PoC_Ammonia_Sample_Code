@@ -14,6 +14,10 @@ The satellite vertical sensitivity to NH3 was investigated by integrating with t
 
 The comparisons were conducted using CMAQ model data gridded at spatial resolutions of 10km and 50km, for each season in the years 2018-2019. Different satellite filters were applied to the CMAQ data, investigating the effect of using various levels of cloud fraction and thermal contrast between the surface and 1km altitude level. Cloud fractions of 5%, 20%, 50% and 100% were applied as well as a temperature contrast filter of greater than 10°K (DT1000). All the tests included a measure of the spectral fit precision (cost function) too (only values <1000 were permitted).
 
+Below is an example of CMAQ with satellite sensitivity CAMR for summer (june, july and august) season in 2018 using 10km CMAQ domain and 20% cloud filter. 
+![alt text](https://github.com/annalisasheehan/PoC_Ammonia_Sample_Code/blob/main/CMAQ_AK_camr_mean_av_filtered_2018JJA_NH3_10kmdomain_cf0.2.png?raw=true)
+
+
 ## Contents of repository
 
 This repository contains the following files: 
