@@ -1,3 +1,4 @@
+import monet as m
 import monetio as mio
 import matplotlib.pyplot as plt
 import numpy as np
@@ -23,7 +24,7 @@ year = args.year
 c_size = args.domain_size
 # % cloud cover in pixel filter
 cf = args.cloud_fraction
-# limit the satellite data to hours surrounding satellite overpass across the UK. 
+# limit the satellite data to hours surrounding satellite overpass across the UK.
 valid_hours = [10,11,12,13,14,15]
 
 ######################################################
@@ -49,11 +50,11 @@ if not os.path.exists(data_folder_cmaqAK):
 # Set parameters based on input variables
 d_size, domain, max_d, cf_name = set_parameters_sat_agg(c_size, cf)
 
-# Read in the CMAQ model domain extents 
+# Read in the CMAQ model domain extents
 model_boxgdf = gpd.read_file('{m_dir}/Data/CMAQ_domain/{y}/{y}_d{d_size}.shp'.format(m_dir=main_dir, d_size=d_size, y=year))
 model_boxgdf.to_crs(epsg=4326,inplace=True)
 
-# Read in CMAQ data 
+# Read in CMAQ data
 cmaq_path = '/rds/general/project/mrc_funded_storage/live/nosha/cmaq/postproc/s00.for_annie/out/cmaq_nh3_data/netcdf'
 cmaq = mio.cmaq.open_dataset('{folder}/COMBINE_ACONC_3d_nh3_v531_intel_cmaqurban_{y}_{d}{size}.nc'.format(folder = cmaq_path, y =year, size=c_size, d=domain))
 
@@ -75,15 +76,15 @@ for season in seasons_list:
     sat_files = get_list_sat_season_files(season, sat_dir, month_range)
     print(len(sat_files))
 
-    # Iterate through satellite files extracting CAMR and other satellite variables to calculate CMAQ CAMR 
+    # Iterate through satellite files extracting CAMR and other satellite variables to calculate CMAQ CAMR
     for sat_file in sat_files:
 
         # Open satellite sounding NetCDF
         satellite = xr.open_dataset(sat_file)
-        
-        # Extract satellite sensing time and day 
+
+        # Extract satellite sensing time and day
         sat_day, sat_hour = extract_satellite_time_day(satellite)
-        
+
         # If the satellite sounding covers the UK based on overpass time
         if sat_hour in valid_hours:
             # Extract satellite variables and filter data
@@ -93,7 +94,7 @@ for season in seasons_list:
             # Subset the CMAQ data to surface level NH3 values for the single day
             cmaq_sub, CMAQ_gdf = extract_CMAQ_day_2D_data(cmaq, sat_day, sat_hour)
 
-            # Join satellite and CMAQ data frames 
+            # Join satellite and CMAQ data frames
             sat_and_cmaq_subset = gpd.sjoin_nearest(filtered_sat_gdf, CMAQ_gdf, lsuffix='sat', rsuffix='CMAQ', distance_col="distances", max_distance=max_d)
             n_soundings = len(sat_and_cmaq_subset)
 
@@ -102,21 +103,21 @@ for season in seasons_list:
                 # Add in a new column to fill in with the CMAQ CAMR values
                 sat_and_cmaq_subset['cmaq_camr'] = np.nan
                 sat_and_cmaq_subset['sat_camr'] = np.nan
-                
+
                 # Extract satellite sounding variables
                 ak_p_t, ak_df, p, sat_df_mgf, sat_df_profmgf = extract_satellite_variables(satellite)
 
                 # Iterate through each of the filtered soundings to calculate the CMAQ CAMR
-                for i in range(n_soundings): 
-                    
+                for i in range(n_soundings):
+
                     # Interpolate the CMAQ NH3 data to the same pressure grid as the satellite data
                     # Apply satellite Averaging Kernels (A.K's)
-                    # Calculate CMAQ with A.K CAMR 
+                    # Calculate CMAQ with A.K CAMR
                     nh3_ak_sf, npi_value, x_num, y_num = calc_CMAQ_with_AK_CAMR(sat_and_cmaq_subset, i, ak_df, ak_p_t, p, cmaq_sub)
 
-                    # Insert satellite and CMAQ CAMR values into output files 
+                    # Insert satellite and CMAQ CAMR values into output files
                     sat_and_cmaq_subset, sat_cmaqGrid, sat_mgf_cmaqGrid = update_output_files(sat_and_cmaq_subset, sat_cmaqGrid, sat_mgf_cmaqGrid, sat_df_mgf, npi_value, cmaq_t_i, x_num, y_num, nh3_ak_sf)
-  
+
     # Make maps of the output and save results as NetCDF
 
     ### CMAQ with satellite sensitivity (A.K's) CAMR
@@ -127,7 +128,7 @@ for season in seasons_list:
     plt.title("CMAQ*A.K. in CMAQ Filtered {out} domain".format(out=outname))
     plt.savefig('{p_folder}/CMAQ_AK_camr_mean_av_filtered_{out}domain_cf{cf}.png'.format(p_folder=plot_folder_cmaqAK, cf=cf, out=outname, size=c_size))
 
-    ### Satellite CAMR plots 
+    ### Satellite CAMR plots
     # Calculate the seasonal mean
     sat_mgf_cmaqGrid_mean = sat_mgf_cmaqGrid.mean(dim=['time'])
     # Plot seasonal average
